@@ -3,12 +3,17 @@ commonfields:
   version: -1
 name: QRadarGetOffenseCorrelations
 script: |-
-  QUERY = "SELECT *,\"CRE Name\",\"CRE Description\",CATEGORYNAME(highlevelcategory) FROM events WHERE \"CRE NAME\" <> NULL AND INOFFENSE({0}) START '{1}'"
-
   d_args = demisto.args()
 
   offense_id = demisto.get(d_args, 'offenseID')
   start_time = demisto.get(d_args, 'startTime')
+  include_null = bool(demisto.get(d_args, 'include_null_correlations'))
+
+  if include_null:
+      QUERY = "SELECT *,\"CRE Name\",\"CRE Description\",CATEGORYNAME(highlevelcategory) FROM events WHERE INOFFENSE({0}) START '{1}'"
+  else:
+      QUERY = "SELECT *,\"CRE Name\",\"CRE Description\",CATEGORYNAME(highlevelcategory) FROM events WHERE \"CRE NAME\" <> NULL AND INOFFENSE({0}) START '{1}'"
+
   # Try converting from date string to timestamp
   try:
       start_time = date_to_timestamp(str(start_time), '%Y-%m-%dT%H:%M:%S.%f000Z')
@@ -86,6 +91,10 @@ args:
   required: true
   description: query from startTime (in timestamp format).
   defaultValue: ${incident.labels.start_time}
+- name: include_null_correlations
+  required: true
+  description: Include Null CRE Names
+  defaultValue: "false"
 - name: headers
   description: Table headers
 - name: range
