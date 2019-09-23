@@ -60,4 +60,4 @@ dependson:
   must:
   - qradar-searches
 tests:
-- No test
+  - No test
